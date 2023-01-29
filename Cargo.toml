@@ -1,0 +1,7 @@
+[workspace]
+
+members = [
+    "smart_hub",
+    "server",
+    "client",
+]
