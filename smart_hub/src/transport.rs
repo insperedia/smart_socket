@@ -25,13 +25,13 @@ impl TcpTransport {
 
 pub trait Transport {
    // fn listen(&self, callback: A) where A: Callback ;
-   fn client_send(&self, data: &str) -> Result<(), TransportError>;
+   fn client_command(&self, data: &str) -> Result<(), TransportError>;
     fn get_next_data(&mut self) -> (u32, String);
     fn response(&mut self, connection_id: u32, data: &str);
 }
 
 impl Transport for TcpTransport {
-    fn client_send(&self, data: &str) -> Result<(), TransportError>{
+    fn client_command(&self, data: &str) -> Result<(), TransportError>{
         let mut stream = TcpStream::connect(&self.addr)?;
         stream.write_all(data.as_ref())?;
         Ok(())

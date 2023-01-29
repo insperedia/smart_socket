@@ -1,4 +1,5 @@
 use std::borrow::Borrow;
+use std::cell::Cell;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::net::TcpStream;
@@ -19,11 +20,12 @@ impl<A: Transport> Server<A> {
     }
 
     pub fn start(&mut self) {
-        let mut transport = &mut self.transport;
+        let mut local_self = Cell::new(self);
         loop {
-            let data = transport.get_next_data();
-            let result = self.process_command(&data.1);
-            transport.response(data.0, result.as_str());
+            let server = local_self.get_mut();
+            let data = server.transport.get_next_data();
+            let result = server.process_command(&data.1);
+            server.transport.response(data.0, result.as_str());
         }
     }
 
@@ -47,6 +49,7 @@ impl<A: Transport> Server<A> {
                         }
                         Some(mut device) => {
                             let result = device.process_command(command.1);
+                            println!("{}", result);
                             result.to_string()
                         }
                     }
