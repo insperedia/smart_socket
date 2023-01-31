@@ -9,6 +9,7 @@ fn main() {
     let mut server =  Server::new(
         transport
    );
-    server.start();
+
     server.devices.insert("socket1".to_string(), Box::new(SmartSocket::new()));
+    server.start();
 }

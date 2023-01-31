@@ -1,3 +1,4 @@
+use crate::errors::TransportError;
 use crate::transport::Transport;
 
 pub struct Client<A: Transport> {
@@ -5,8 +6,7 @@ pub struct Client<A: Transport> {
 }
 
 impl<A: Transport> Client<A> {
-    pub fn send(&self, data: &str) {
-
-        self.transport.client_command(data);
+    pub fn send(&self, data: &str) -> Result<String, TransportError> {
+       Ok(self.transport.client_command(data)?)
     }
 }

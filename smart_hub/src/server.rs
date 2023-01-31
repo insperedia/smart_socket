@@ -20,12 +20,11 @@ impl<A: Transport> Server<A> {
     }
 
     pub fn start(&mut self) {
-        let mut local_self = Cell::new(self);
         loop {
-            let server = local_self.get_mut();
-            let data = server.transport.get_next_data();
-            let result = server.process_command(&data.1);
-            server.transport.response(data.0, result.as_str());
+            let data = self.transport.get_next_data();
+            let result = self.process_command(&data.1);
+            println!("{}", result);
+            self.transport.response(data.0, result.as_str());
         }
     }
 
