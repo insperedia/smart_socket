@@ -22,12 +22,12 @@ fn main() {
         let result = std::io::stdin().read_line(&mut cmd);
         match result {
             Ok(_) => {
-
-                if cmd.eq("exit\n") {
+                let cmd = cmd.trim();
+                if cmd.eq("exit") {
                     break;
                 }
-                println!("Requesting...");
-               let result =  client.send(cmd.as_str());
+                println!("Requesting... {}.", cmd);
+               let result =  client.send(cmd);
                 match result {
                     Ok(response) => {println!("{}\n", response)}
                     Err(error) => { println!("Transport error: {}", error.to_string() )}
