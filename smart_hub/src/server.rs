@@ -1,8 +1,4 @@
-use std::borrow::Borrow;
-use std::cell::Cell;
 use std::collections::HashMap;
-use std::fmt::Debug;
-use std::net::TcpStream;
 use crate::devices::Device;
 use crate::transport::Transport;
 
@@ -31,8 +27,8 @@ impl<A: Transport> Server<A> {
     fn process_command(&mut self, data: &str) -> String {
         return if data == "info" {
             let mut result: Vec<String> = vec!["Devices:".to_string()];
-            for (key, _) in &self.devices {
-                let line = format!("{}", key);
+            for key in self.devices.keys() {
+                let line = key.to_string();
                 result.push(line);
             }
             result.join("\n")
@@ -46,7 +42,7 @@ impl<A: Transport> Server<A> {
                         None => {
                             "Device not found".to_string()
                         }
-                        Some(mut device) => {
+                        Some(device) => {
                             let result = device.process_command(command.1);
                             println!("{}", result);
                             result.to_string()

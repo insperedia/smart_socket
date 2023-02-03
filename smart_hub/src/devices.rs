@@ -31,7 +31,13 @@ impl Device for SmartSocket {
                 "Socket is off"
             }
         }
-        return "Command not found";
+        "Command not found"
+    }
+}
+
+impl Default for SmartSocket {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

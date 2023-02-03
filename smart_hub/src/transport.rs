@@ -1,8 +1,6 @@
 use std::collections::HashMap;
-use std::error::Error;
-use std::io;
 use std::io::{Read, Write};
-use std::net::{IpAddr, TcpListener, TcpStream};
+use std::net::{TcpListener, TcpStream};
 use crate::errors::TransportError;
 
 pub struct TcpTransport {
@@ -37,9 +35,9 @@ impl NetworkedStream for TcpStream {
             }
             let chars = buffer.get(0..result).unwrap();
             let string = String::from_utf8_lossy(chars).to_string();
-            if string.contains("\n")
+            if string.contains('\n')
             {
-                data.push_str(string.split_once("\n").unwrap().0);
+                data.push_str(string.split_once('\n').unwrap().0);
                 break;
             } else {
                 data.push_str(string.as_str());
@@ -68,26 +66,25 @@ impl Transport for TcpTransport {
 
     fn get_next_data(&mut self) -> (u32, String) {
         let mut data = String::new();
-        let result = match self.tcp.accept() {
-            Ok((mut stream, addr)) => {
+        match self.tcp.accept() {
+            Ok((mut stream, _)) => {
                 stream.read_to_eol(&mut data);
                 println!("Data read: {:?}", data);
                 let mut index = 0;
                 loop {
-                    if ! self.connections.contains_key(&index) {
+                    if !self.connections.contains_key(&index) {
                         break;
                     }
-                    index = index + 1;
+                    index += 1;
                     if index == u32::MAX {
                         panic!("Connection limit reached");
                     }
                 }
                 self.connections.insert(index, stream);
-                return  (index, data)
-
+                (index, data)
             },
             Err(e) => panic!("couldn't get client: {e:?}"),
-        };
+        }
 
     }
 
@@ -97,8 +94,8 @@ impl Transport for TcpTransport {
             None => { panic!("Connection not found")}
             Some(stream) => {
                 let mut stream = stream;
-                stream.write_all(data.as_bytes());
-                stream.write_all("\n".as_bytes());
+                stream.write_all(data.as_bytes()).unwrap();
+                stream.write_all("\n".as_bytes()).unwrap();
                 self.connections.remove(&connection_id);
             }
         }

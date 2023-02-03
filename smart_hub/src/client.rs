@@ -7,6 +7,6 @@ pub struct Client<A: Transport> {
 
 impl<A: Transport> Client<A> {
     pub fn send(&self, data: &str) -> Result<String, TransportError> {
-       Ok(self.transport.client_command(data)?)
+       self.transport.client_command(data)
     }
 }

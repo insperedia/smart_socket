@@ -1,6 +1,4 @@
-use std::io::{stdout, Write};
 use smart_hub::client::Client;
-use smart_hub::errors::TransportError;
 use smart_hub::transport::TcpTransport;
 
 fn main() {
@@ -9,7 +7,6 @@ fn main() {
     let client = Client {
         transport,
     };
-    
     
     println!("Commands:\n");
     println!("    info - get device list");
@@ -29,7 +26,7 @@ fn main() {
                let result =  client.send(cmd.as_str());
                 match result {
                     Ok(response) => {println!("{}\n", response)}
-                    Err(error) => { println!("Transport error: {}", error.to_string() )}
+                    Err(error) => { println!("Transport error: {}", error )}
                 }
             }
             Err(_) => { println!("Error reading command. Try again.\n")}
