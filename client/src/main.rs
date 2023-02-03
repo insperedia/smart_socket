@@ -23,7 +23,7 @@ fn main() {
                     break;
                 }
                 println!("Requesting... {}.", cmd);
-               let result =  client.send(cmd.as_str());
+               let result =  client.send(cmd.as_str().trim());
                 match result {
                     Ok(response) => {println!("{}\n", response)}
                     Err(error) => { println!("Transport error: {}", error )}

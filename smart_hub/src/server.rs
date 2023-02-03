@@ -31,7 +31,7 @@ impl<A: Transport> Server<A> {
                 let line = key.to_string();
                 result.push(line);
             }
-            result.join("  ")
+            result.join("\n")
         } else {
             let command_option = data.split_once("|||");
             match command_option {
