@@ -17,17 +17,16 @@ fn main() {
     println!("            available commands: seton, setoff, info");
     println!("    exit - exit client ");
 
-    let mut cmd = String::new();
     loop {
+        let mut cmd = String::new();
         let result = std::io::stdin().read_line(&mut cmd);
         match result {
             Ok(_) => {
-                let cmd = cmd.trim();
-                if cmd.eq("exit") {
+                if cmd.eq("exit\n") {
                     break;
                 }
                 println!("Requesting... {}.", cmd);
-               let result =  client.send(cmd);
+               let result =  client.send(cmd.as_str());
                 match result {
                     Ok(response) => {println!("{}\n", response)}
                     Err(error) => { println!("Transport error: {}", error.to_string() )}

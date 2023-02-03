@@ -22,6 +22,32 @@ impl TcpTransport {
     }
 }
 
+pub trait NetworkedStream {
+    fn read_to_eol(&mut self, data: &mut String);
+}
+
+impl NetworkedStream for TcpStream {
+    fn read_to_eol(&mut self, data: &mut String ) {
+        let mut buffer = [0; 4];
+        loop {
+
+            let result = self.read(&mut buffer).unwrap();
+            if result == 0 {
+                break;
+            }
+            let chars = buffer.get(0..result).unwrap();
+            let string = String::from_utf8_lossy(chars).to_string();
+            if string.contains("\n")
+            {
+                data.push_str(string.split_once("\n").unwrap().0);
+                break;
+            } else {
+                data.push_str(string.as_str());
+            }
+        }
+    }
+}
+
 
 pub trait Transport {
    // fn listen(&self, callback: A) where A: Callback ;
@@ -36,18 +62,15 @@ impl Transport for TcpTransport {
         stream.write_all(data.as_bytes())?;
         stream.flush().unwrap();
         let mut response = String::new();
-        let result = stream.read_to_string(&mut response);
-        match result {
-            Ok(_) => {return Ok(response)}
-            Err(_) => {panic!("Error reading response")}
-        }
+        stream.read_to_eol(&mut response);
+        Ok(response)
     }
 
     fn get_next_data(&mut self) -> (u32, String) {
-        let mut data = vec![];
+        let mut data = String::new();
         let result = match self.tcp.accept() {
             Ok((mut stream, addr)) => {
-                stream.read_to_end(&mut data).expect("Can not read data");
+                stream.read_to_eol(&mut data);
                 println!("Data read: {:?}", data);
                 let mut index = 0;
                 loop {
@@ -60,10 +83,7 @@ impl Transport for TcpTransport {
                     }
                 }
                 self.connections.insert(index, stream);
-                let s = match String::from_utf8(data) {
-                    Ok(data) =>  return  (index, data),
-                    Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
-                };
+                return  (index, data)
 
             },
             Err(e) => panic!("couldn't get client: {e:?}"),
@@ -78,6 +98,7 @@ impl Transport for TcpTransport {
             Some(stream) => {
                 let mut stream = stream;
                 stream.write_all(data.as_bytes());
+                stream.write_all("\n".as_bytes());
                 self.connections.remove(&connection_id);
             }
         }

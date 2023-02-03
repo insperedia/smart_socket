@@ -30,9 +30,9 @@ impl<A: Transport> Server<A> {
 
     fn process_command(&mut self, data: &str) -> String {
         return if data == "info" {
-            let mut result: Vec<String> = vec!["Devices: \n".to_string()];
+            let mut result: Vec<String> = vec!["Devices:".to_string()];
             for (key, _) in &self.devices {
-                let line = format!("{}\n", key);
+                let line = format!("{}", key);
                 result.push(line);
             }
             result.join("\n")
