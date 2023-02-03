@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use crate::devices::Device;
 use crate::transport::Transport;
+use std::collections::HashMap;
 
 pub struct Server<A: Transport> {
     transport: A,
@@ -35,13 +35,11 @@ impl<A: Transport> Server<A> {
         } else {
             let command_option = data.split_once("|||");
             match command_option {
-                None => { "Incorrect data format".to_string() }
+                None => "Incorrect data format".to_string(),
                 Some(command) => {
                     let device = self.devices.get_mut(command.0);
                     match device {
-                        None => {
-                            "Device not found".to_string()
-                        }
+                        None => "Device not found".to_string(),
                         Some(device) => {
                             let result = device.process_command(command.1);
                             println!("{}", result);
@@ -52,6 +50,4 @@ impl<A: Transport> Server<A> {
             }
         };
     }
-
-
 }

@@ -4,10 +4,8 @@ use smart_hub::transport::TcpTransport;
 fn main() {
     let transport = TcpTransport::new("localhost:2233".to_string());
 
-    let client = Client {
-        transport,
-    };
-    
+    let client = Client { transport };
+
     println!("Commands:\n");
     println!("    info - get device list");
     println!("    device_id|||command - run command on device");
@@ -23,17 +21,19 @@ fn main() {
                     break;
                 }
                 println!("Requesting... {}.", cmd);
-               let result =  client.send(cmd.as_str().trim());
+                let result = client.send(cmd.as_str().trim());
                 match result {
-                    Ok(response) => {println!("{}\n", response)}
-                    Err(error) => { println!("Transport error: {}", error )}
+                    Ok(response) => {
+                        println!("{}\n", response)
+                    }
+                    Err(error) => {
+                        println!("Transport error: {}", error)
+                    }
                 }
             }
-            Err(_) => { println!("Error reading command. Try again.\n")}
+            Err(_) => {
+                println!("Error reading command. Try again.\n")
+            }
         }
     }
-
-
-
-
 }
