@@ -1,5 +1,6 @@
 use crate::errors::TransportError;
 use std::collections::HashMap;
+use std::io;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 
@@ -22,6 +23,8 @@ impl TcpTransport {
 
 pub trait NetworkedStream {
     fn read_to_eol(&mut self, data: &mut String);
+    fn read_by_size(&mut self) -> Vec<u8>;
+    fn write_with_size(&mut self, data: &[u8]) -> io::Result<()>;
 }
 
 impl NetworkedStream for TcpStream {
@@ -45,6 +48,24 @@ impl NetworkedStream for TcpStream {
         }
         //   println!("data: {:?}", data);
     }
+
+    fn read_by_size(&mut self) -> Vec<u8> {
+        let mut buf = [0; 4];
+        self.read_exact(&mut buf).unwrap();
+        let len = u32::from_be_bytes(buf);
+        let mut buf = vec![0; len as _];
+        self.read_exact(&mut buf).unwrap();
+        return buf;
+    }
+
+    fn write_with_size(&mut self, data: &[u8]) -> io::Result<()> {
+        let bytes = data;
+        let len = bytes.len() as u32;
+        let len_bytes = len.to_be_bytes();
+        self.write_all(&len_bytes)?;
+        self.write_all(bytes)?;
+        Ok(())
+    }
 }
 
 pub trait Transport {
@@ -57,11 +78,13 @@ pub trait Transport {
 impl Transport for TcpTransport {
     fn client_command(&self, data: &str) -> Result<String, TransportError> {
         let mut stream = TcpStream::connect(&self.addr)?;
-        stream.write_all(data.as_bytes())?;
-        stream.write_all(&[3])?;
-        stream.flush().unwrap();
-        let mut response = String::new();
-        stream.read_to_eol(&mut response);
+        stream.write_with_size(data.as_bytes())?;
+    //    stream.write_all(data.as_bytes())?;
+   //     stream.write_all(&[3])?;
+    //    stream.flush().unwrap();
+        let mut response: Vec<u8> = Vec::new() ;
+        let response = stream.read_by_size();
+        let response = String::from_utf8(response).unwrap();
         Ok(response)
     }
 
@@ -70,7 +93,9 @@ impl Transport for TcpTransport {
         match self.tcp.accept() {
             Ok((mut stream, _)) => {
                 println!("Connection accepted");
-                stream.read_to_eol(&mut data);
+                let data = stream.read_by_size();
+                let data = String::from_utf8(data).unwrap();
+
                 println!("Data read: {:?}", data);
                 let mut index = 0;
                 loop {
@@ -97,9 +122,18 @@ impl Transport for TcpTransport {
             }
             Some(stream) => {
                 let mut stream = stream;
-                stream.write_all(data.as_bytes()).unwrap();
-                stream.write_all(&[3]).unwrap();
-                self.connections.remove(&connection_id);
+           //     stream.write_all("test".as_ref()).unwrap();
+               stream.write_with_size(data.as_bytes()).unwrap();
+/*
+                let bytes = data.as_bytes();
+                let len = bytes.len() as u32;
+                let len_bytes = len.to_be_bytes();
+                stream.write_all(&len_bytes).unwrap();
+                stream.write_all(bytes).unwrap();
+*/
+     //           self.connections.remove(&connection_id);
+
+
             }
         }
     }
