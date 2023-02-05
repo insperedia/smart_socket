@@ -1,13 +1,14 @@
 use crate::devices::Device;
 use crate::transport::Transport;
 use std::collections::HashMap;
+use std::thread;
 
 pub struct Server<A: Transport> {
     transport: A,
-    pub devices: HashMap<String, Box<dyn Device>>,
+    pub devices: HashMap<String, Box<dyn Device + Send>>,
 }
 
-impl<A: Transport> Server<A> {
+impl<A: Transport> Server<A > {
     pub fn new(transport: A) -> Server<A> {
         Server {
             transport,
@@ -16,12 +17,15 @@ impl<A: Transport> Server<A> {
     }
 
     pub fn start(&mut self) {
-        loop {
-            let data = self.transport.get_next_data();
-            let result = self.process_command(&data.1);
-            println!("{}", result);
-            self.transport.response(data.0, result.as_str());
-        }
+
+            loop {
+                let data = self.transport.get_next_data();
+                let result = self.process_command(&data.1);
+                println!("{result}");
+                self.transport.response(data.0, result.as_str());
+            }
+
+
     }
 
     fn process_command(&mut self, data: &str) -> String {
@@ -42,8 +46,8 @@ impl<A: Transport> Server<A> {
                         None => "Device not found".to_string(),
                         Some(device) => {
                             let result = device.process_command(command.1);
-                            println!("{}", result);
-                            result.to_string()
+                            println!("{result}" );
+                            result
                         }
                     }
                 }

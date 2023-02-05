@@ -73,7 +73,7 @@ pub trait NetworkedStream {
         let len = u32::from_be_bytes(buf);
         let mut buf = vec![0; len as _];
         self.read_exact(&mut buf).unwrap();
-        return buf;
+        buf
     }
 
     fn write_with_size(&mut self, data: &[u8]) -> io::Result<()> {
@@ -114,7 +114,7 @@ impl Transport for TcpTransport {
                 let data = stream.read_by_size();
                 let data = String::from_utf8(data).unwrap();
 
-                println!("Data read: {:?}", data);
+                println!("Data read: {data:?}");
                 let mut index = 0;
                 loop {
                     if !self.connections.contains_key(&index) {

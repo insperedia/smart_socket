@@ -1,11 +1,21 @@
+use std::thread;
+use std::time::Duration;
 use smart_hub::client::Client;
-use smart_hub::transport::{TcpTransport, UdpTransport};
+use smart_hub::transport::{UdpTransport};
+use rand::Rng;
+
 
 fn main() {
     let transport = UdpTransport::new("localhost:2234".to_string(), "localhost:2233".to_string());
-
     let client = Client { transport };
+    let mut rng = rand::thread_rng();
+    loop {
+        let temp: i32 = rng.gen_range(-10..30);
+        client.send(format!("therm1|||settemp#{temp}").as_str()).unwrap();
+        thread::sleep(Duration::new(1, 0));
+    }
 
+    /*
     println!("Commands:\n");
     println!("    info - get device list");
     println!("    device_id|||command - run command on device");
@@ -36,4 +46,6 @@ fn main() {
             }
         }
     }
+
+     */
 }

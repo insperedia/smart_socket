@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 smart_hub = { path = "../smart_hub" }
+
