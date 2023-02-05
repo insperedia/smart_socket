@@ -2,7 +2,7 @@ use crate::errors::TransportError;
 use std::collections::HashMap;
 use std::io;
 use std::io::{Read, Write};
-use std::net::{TcpListener, TcpStream};
+use std::net::{TcpListener, TcpStream, UdpSocket};
 
 pub struct TcpTransport {
     tcp: TcpListener,
@@ -21,13 +21,31 @@ impl TcpTransport {
     }
 }
 
+
+pub struct UdpTransport {
+    addr: String,
+    socket: UdpSocket
+}
+
+impl UdpTransport {
+    pub fn new(addr: String, remote_addr: String) -> UdpTransport {
+        let socket =  UdpSocket::bind(&addr).unwrap();
+        socket.connect(remote_addr).expect("connect function failed");
+       UdpTransport {
+           socket,
+           addr
+       }
+    }
+}
+
 pub trait NetworkedStream {
     fn read_to_eol(&mut self, data: &mut String);
     fn read_by_size(&mut self) -> Vec<u8>;
     fn write_with_size(&mut self, data: &[u8]) -> io::Result<()>;
 }
 
-impl NetworkedStream for TcpStream {
+
+ impl NetworkedStream for TcpStream {
     fn read_to_eol(&mut self, data: &mut String) {
         //   println!("read_to_eol");
         let mut buffer = [0; 4];
@@ -122,19 +140,44 @@ impl Transport for TcpTransport {
             }
             Some(stream) => {
                 let mut stream = stream;
-           //     stream.write_all("test".as_ref()).unwrap();
-               stream.write_with_size(data.as_bytes()).unwrap();
-/*
+       //        stream.write_with_size(data.as_bytes()).unwrap();
                 let bytes = data.as_bytes();
                 let len = bytes.len() as u32;
                 let len_bytes = len.to_be_bytes();
                 stream.write_all(&len_bytes).unwrap();
                 stream.write_all(bytes).unwrap();
-*/
+
      //           self.connections.remove(&connection_id);
 
 
             }
         }
+    }
+}
+
+impl Transport for UdpTransport {
+    fn client_command(&self, data: &str) -> Result<String, TransportError> {
+
+        self.socket.send(data.as_bytes()).unwrap();
+        println!("sent");
+        let mut buf = [0; 100];
+        let (size, src) = self.socket.recv_from(&mut buf).unwrap();
+        let data = buf.get(0..size).unwrap();
+        let string = String::from_utf8(Vec::from(data)).unwrap();
+        Ok(string)
+    }
+
+    fn get_next_data(&mut self) -> (u32, String) {
+        let socket = &self.socket;
+        let mut buf = [0; 100];
+        let (size, src) = socket.recv_from(&mut buf).unwrap();
+        println!("recieved");
+        let data = buf.get(0..size).unwrap();
+        let string = String::from_utf8(Vec::from(data)).unwrap();
+        (0, string)
+    }
+
+    fn response(&mut self, connection_id: u32, data: &str) {
+        self.socket.send(data.as_bytes()).unwrap();
     }
 }

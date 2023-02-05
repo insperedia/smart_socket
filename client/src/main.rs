@@ -1,8 +1,8 @@
 use smart_hub::client::Client;
-use smart_hub::transport::TcpTransport;
+use smart_hub::transport::{TcpTransport, UdpTransport};
 
 fn main() {
-    let transport = TcpTransport::new("localhost:2233".to_string());
+    let transport = UdpTransport::new("localhost:2234".to_string(), "localhost:2233".to_string());
 
     let client = Client { transport };
 
