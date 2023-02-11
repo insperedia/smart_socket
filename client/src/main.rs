@@ -4,14 +4,16 @@ use smart_hub::transport::UdpTransport;
 use std::thread;
 use std::time::Duration;
 
-fn main() {
-    let transport = UdpTransport::new("localhost:2234".to_string(), "localhost:2233".to_string());
+#[tokio::main]
+async fn main() {
+    let transport = UdpTransport::new("localhost:2234".to_string(), "localhost:2233".to_string()).await;
     let client = Client { transport };
     let mut rng = rand::thread_rng();
     loop {
         let temp: i32 = rng.gen_range(-10..30);
         client
             .send(format!("therm1|||settemp#{temp}").as_str())
+            .await
             .unwrap();
         thread::sleep(Duration::new(1, 0));
     }

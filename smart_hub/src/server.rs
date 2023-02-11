@@ -15,12 +15,12 @@ impl<A: Transport> Server<A> {
         }
     }
 
-    pub fn start(&mut self) {
+    pub async fn start(&mut self) {
         loop {
-            let data = self.transport.get_next_data();
+            let data = self.transport.get_next_data().await;
             let result = self.process_command(&data.1);
             println!("{result}");
-            self.transport.response(data.0, result.as_str());
+            self.transport.response(data.0, result.as_str()).await;
         }
     }
 
