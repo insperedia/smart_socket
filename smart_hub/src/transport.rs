@@ -1,12 +1,8 @@
 use crate::errors::TransportError;
 use std::collections::HashMap;
 use std::io;
-use std::io::{Read, Write};
-//use std::net::{TcpListener, TcpStream, UdpSocket};
-use tokio::net::{TcpListener, TcpSocket, TcpStream, UdpSocket};
+use tokio::net::{TcpListener, TcpStream, UdpSocket};
 use async_trait::async_trait;
-use tokio::io::{AsyncRead, AsyncWrite};
-
 
 pub struct TcpTransport {
     tcp: TcpListener,
@@ -39,9 +35,6 @@ impl UdpTransport {
     }
 }
 
-pub struct TcpNetworkStream {
-    stream: TcpStream
-}
 
 #[async_trait]
 pub trait NetworkedStream {
@@ -149,12 +142,9 @@ impl Transport for TcpTransport {
                 panic!("Connection not found")
             }
             Some(stream) => {
-                let mut stream = stream;
+                let stream = stream;
                 //        stream.write_with_size(data.as_bytes()).unwrap();
                 let bytes = data.as_bytes();
-                let len = bytes.len() as u32;
-                let len_bytes = len.to_be_bytes();
-
                 stream.write_with_size(bytes).await.unwrap();
 
                 //           self.connections.remove(&connection_id);

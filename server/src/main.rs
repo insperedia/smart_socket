@@ -1,7 +1,6 @@
 use smart_hub::devices::SmartThermometer;
 use smart_hub::server::Server;
 use smart_hub::transport::UdpTransport;
-use std::thread;
 
 #[tokio::main]
 async fn main() {
