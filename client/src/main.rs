@@ -6,7 +6,8 @@ use std::time::Duration;
 
 #[tokio::main]
 async fn main() {
-    let transport = UdpTransport::new("localhost:2234".to_string(), "localhost:2233".to_string()).await;
+    let transport =
+        UdpTransport::new("localhost:2234".to_string(), "localhost:2233".to_string()).await;
     let client = Client { transport };
     let mut rng = rand::thread_rng();
     loop {

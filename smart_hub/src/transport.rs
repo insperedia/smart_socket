@@ -1,8 +1,8 @@
 use crate::errors::TransportError;
+use async_trait::async_trait;
 use std::collections::HashMap;
 use std::io;
 use tokio::net::{TcpListener, TcpStream, UdpSocket};
-use async_trait::async_trait;
 
 pub struct TcpTransport {
     tcp: TcpListener,
@@ -29,12 +29,12 @@ impl UdpTransport {
     pub async fn new(addr: String, remote_addr: String) -> UdpTransport {
         let socket = UdpSocket::bind(addr).await.unwrap();
         socket
-            .connect(remote_addr).await
+            .connect(remote_addr)
+            .await
             .expect("connect function failed");
         UdpTransport { socket }
     }
 }
-
 
 #[async_trait]
 pub trait NetworkedStream {
@@ -51,7 +51,7 @@ impl NetworkedStream for TcpStream {
         loop {
             self.readable().await.unwrap();
             let result = self.try_read(&mut buffer).unwrap();
-           // let result = self.stream.read_buf(&mut buffer).await.unwrap();
+            // let result = self.stream.read_buf(&mut buffer).await.unwrap();
             if result == 0 {
                 break;
             }
